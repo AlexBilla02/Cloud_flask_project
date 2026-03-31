@@ -1,0 +1,34 @@
+
+services:
+  db:
+    image: postgres:latest
+    container_name: flask-db-test
+    environment:
+      POSTGRES_USER: flask
+      POSTGRES_PASSWORD: passwordhere
+      POSTGRES_DB: blog
+    ports:
+      - "5432:5432"
+    networks:
+      blog_network:
+        ipv4_address: 172.28.0.2  
+    volumes:
+      - ./postgres_data:/var/lib/postgresql
+
+  web:
+    build: .
+    container_name: strange-blog-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - blog_network
+    environment:
+      - FLASK_APP=app.py
+
+networks:
+  blog_network:
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

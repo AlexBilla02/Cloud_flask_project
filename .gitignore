@@ -4,4 +4,6 @@ venv
 
 *.pyc
 
+postgres_data/
+
 migrations

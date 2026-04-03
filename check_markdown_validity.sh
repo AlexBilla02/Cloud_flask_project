@@ -23,6 +23,12 @@ for file in "$POSTS_DIR"/*.md; do
     if [[ ! "$DATE_VAL" =~ ^(January|February|March|April|May|June|July|August|September|October|November|December)\ [0-9]{1,2},\ [0-9]{4}$ ]]; then
         echo "❌ Errore: Formato data errato -> '$DATE_VAL'. Deve essere 'Month Day, Year'."
         EXIT_CODE=1
+    else
+        # Secondo controllo: Esistenza reale della data 
+        if ! date -d "$DATE_VAL" > /dev/null 2>&1; then
+            echo "❌ Errore: La data '$DATE_VAL' non esiste nel calendario! (es. Novembre ha 30 giorni)"
+            EXIT_CODE=1
+        fi
     fi
 
     # 3. Verifica presenza separatore '---'

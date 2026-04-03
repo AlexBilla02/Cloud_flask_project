@@ -25,8 +25,8 @@ for file in "$POSTS_DIR"/*.md; do
         EXIT_CODE=1
     else
         # Secondo controllo: Esistenza reale della data 
-        if ! date -d "$DATE_VAL" > /dev/null 2>&1; then
-            echo "❌ Errore: La data '$DATE_VAL' non esiste nel calendario! (es. Novembre ha 30 giorni)"
+        if ! python3 -c "from datetime import datetime; datetime.strptime('$DATE_VAL', '%B %d, %Y')" > /dev/null 2>&1; then
+            echo "❌ Errore LOGICO: La data '$DATE_VAL' non esiste nel calendario!"
             EXIT_CODE=1
         fi
     fi

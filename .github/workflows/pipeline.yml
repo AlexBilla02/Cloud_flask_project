@@ -1,0 +1,32 @@
+name: Strange Blog Pipeline
+
+on:
+  push:
+    branches: [ main, dev ] # Qua dico di attivarsi quando si carica sul ramo main o dev
+  pull_request:
+    branches: [ main ]      # Qua invece quando chiedo di mergiare sul branch main
+
+jobs:
+  lint-posts:
+    runs-on: ubuntu-latest 
+
+    steps:
+      - name: Checkout del codice
+        uses: actions/checkout@v4 
+
+      - name: Permessi allo script
+        run: chmod +x check_markdown_validity.sh
+
+      - name: Esecuzione validazione post
+        run: ./check_markdown_validity.sh
+
+  build-check:
+    needs: lint-posts 
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout del codice
+        uses: actions/checkout@v4
+
+      - name: Build dell'immagine Docker
+        run: docker compose build 

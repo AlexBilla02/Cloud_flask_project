@@ -30,3 +30,30 @@ jobs:
 
       - name: Build dell'immagine Docker
         run: docker compose build 
+
+  deploy:
+      needs: build-check # Parte solo se la build Docker è ok
+      if: github.ref == 'refs/heads/main' # Esegue solo su merge/push in main
+      runs-on: ubuntu-latest
+      
+      steps:
+        - name: Checkout del codice
+          uses: actions/checkout@v4
+
+        - name: Connessione a Tailscale
+          uses: tailscale/github-action@v2
+          with:
+            authkey: ${{ secrets.TS_AUTHKEY }}
+
+        - name: Deploy via SSH
+          uses: appleboy/ssh-action@v1.0.3
+          with:
+            host: ${{ secrets.SERVER_IP }}
+            username: ${{ secrets.SERVER_USER }}
+            key: ${{ secrets.SSH_PRIVATE_KEY }}
+            # ATTENZIONE: cambia ~/strange-blog con il percorso reale sul server
+            script: |
+              cd ~/cloud/Cloud_flask_project
+              git pull origin main
+              docker compose up --build -d
+              docker image prune -f

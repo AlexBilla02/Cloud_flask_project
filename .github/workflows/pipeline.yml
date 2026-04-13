@@ -2,58 +2,70 @@ name: Strange Blog Pipeline
 
 on:
   push:
-    branches: [ main, dev ] # Qua dico di attivarsi quando si carica sul ramo main o dev
+    branches: [ main, dev ]
   pull_request:
-    branches: [ main ]      # Qua invece quando chiedo di mergiare sul branch main
+    branches: [ main ]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   lint-posts:
     runs-on: ubuntu-latest 
-
     steps:
       - name: Checkout del codice
         uses: actions/checkout@v4 
-
       - name: Permessi allo script
         run: chmod +x check_markdown_validity.sh
-
       - name: Esecuzione validazione post
         run: ./check_markdown_validity.sh
 
-  build-check:
-    needs: lint-posts 
+  build-and-push:
+    needs: lint-posts
     runs-on: ubuntu-latest
-    
+    # Push immagine solo se sono sul branch main
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout del codice
         uses: actions/checkout@v4
 
-      - name: Build dell'immagine Docker
-        run: docker compose build 
+      - name: Login a GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push dell'immagine
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
 
   deploy:
-      needs: build-check # Parte solo se la build Docker è ok
-      if: github.ref == 'refs/heads/main' # Esegue solo su merge/push in main
-      runs-on: ubuntu-latest
-      
-      steps:
-        - name: Checkout del codice
-          uses: actions/checkout@v4
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del codice
+        uses: actions/checkout@v4
 
-        - name: Connessione a Tailscale
-          uses: tailscale/github-action@v2
-          with:
-            authkey: ${{ secrets.TS_AUTHKEY }}
+      - name: Connessione a Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
 
-        - name: Deploy via SSH
-          uses: appleboy/ssh-action@v1.0.3
-          with:
-            host: ${{ secrets.SERVER_IP }}
-            username: ${{ secrets.SERVER_USER }}
-            key: ${{ secrets.SSH_PRIVATE_KEY }}
-            # ATTENZIONE: cambia ~/strange-blog con il percorso reale sul server
-            script: |
-              cd ~/cloud/Cloud_flask_project
-              git pull origin main
-              docker compose up --build -d
-              docker image prune -f
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/cloud/Cloud_flask_project
+            git pull origin main
+            docker compose pull
+            docker compose up -d
+            docker image prune -f

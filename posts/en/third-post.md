@@ -2,7 +2,7 @@ title: New post
 subtitle: Starting my second year of my bachelor's degree in Software Engineering, I decided to try freelancing, results were dreadful. 
 author: Alex Billa
 author_image: immagine-prova.jpg
-date: April 13, 2026
+date: April 31, 2026
 image: immagine-prova.jpg
 permalink: third-post
 tags: experience

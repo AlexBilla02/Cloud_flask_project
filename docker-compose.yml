@@ -16,7 +16,8 @@ services:
       - ./postgres_data:/var/lib/postgresql
 
   web:
-    build: .
+    image: ghcr.io/alexbilla02/cloud_flask_project:latest
+    #build: .
     container_name: strange-blog-app
     command: gunicorn -w 4 -b 0.0.0.0:8080 wsgi:app
     ports:

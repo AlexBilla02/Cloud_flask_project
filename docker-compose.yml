@@ -1,8 +1,6 @@
-
 services:
   db:
     image: postgres:latest
-    container_name: flask-db-test
     environment:
       POSTGRES_USER: flask
       POSTGRES_PASSWORD: passwordhere
@@ -10,32 +8,35 @@ services:
     ports:
       - "5432:5432"
     networks:
-      blog_network:
-        ipv4_address: 172.28.0.2  
+      - blog_network
     volumes:
-      - ./postgres_data:/var/lib/postgresql
-
-web:
-    image: ghcr.io/tuo-utente/strange-blog-app:latest
+      - postgres_data:/var/lib/postgresql/data 
     deploy:
-      replicas: 2             
-      update_config:
-        parallelism: 1        # un update alla volta
-        order: start-first    
-        failure_action: rollback 
+      replicas: 1
       restart_policy:
         condition: on-failure
+
+  web:
+    image: ghcr.io/alexbilla02/strange-blog-app:latest
     ports:
       - "8080:5000"
-    depends_on:
-      - db
     networks:
       - blog_network
     environment:
       - FLASK_APP=app.py
+      - SQLALCHEMY_DATABASE_URI=postgresql://flask:passwordhere@db:5432/blog
+    deploy:
+      replicas: 2             
+      update_config:
+        parallelism: 1
+        order: start-first    
+        failure_action: rollback 
+      restart_policy:
+        condition: on-failure
 
 networks:
   blog_network:
-    ipam:
-      config:
-        - subnet: 172.28.0.0/16
+    driver: overlay 
+
+volumes:
+  postgres_data: 

@@ -70,5 +70,5 @@ jobs:
             cd ~/cloud/Cloud_flask_project
             git pull origin main
             docker compose pull
-            docker compose up -d
+            docker stack deploy -c docker-compose.yml strange-blog
             docker image prune -f

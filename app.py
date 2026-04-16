@@ -3,6 +3,7 @@
 
 import markdown
 import sys
+import os
 from datetime import datetime as dt
 from flask import Flask, render_template
 from flask_flatpages import FlatPages
@@ -13,8 +14,8 @@ from flask_migrate import Migrate
 
 app = Flask(__name__)
 freezer = Freezer(app)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://flask:passwordhere@172.28.0.2:5432/blog"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
+#app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://flask:passwordhere@172.28.0.2:5432/blog"
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 

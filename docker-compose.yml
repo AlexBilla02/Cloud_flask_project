@@ -10,7 +10,7 @@ services:
     networks:
       - blog_network
     volumes:
-      - postgres_data:/var/lib/postgresql/data 
+      - postgres_data:/var/lib/postgresql
     deploy:
       replicas: 1
       restart_policy:

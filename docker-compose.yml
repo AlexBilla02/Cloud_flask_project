@@ -19,7 +19,7 @@ services:
   web:
     image: ghcr.io/alexbilla02/cloud_flask_project:latest
     ports:
-      - "8080:5000"
+      - "8080:8080"
     networks:
       - blog_network
     environment:

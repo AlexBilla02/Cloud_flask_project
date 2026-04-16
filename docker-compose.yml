@@ -17,7 +17,7 @@ services:
         condition: on-failure
 
   web:
-    image: ghcr.io/alexbilla02/strange-blog-app:latest
+    image: ghcr.io/alexbilla02/cloud_flask_project:latest
     ports:
       - "8080:5000"
     networks:
